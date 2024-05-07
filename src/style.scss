@@ -1,0 +1,49 @@
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#leaflet-map {
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+}
+
+.map-bus-icon svg {
+  // box-shadow: 1px 1px 1px 0 #000;
+}
+
+.map-control-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.map-control-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: start;
+}
+
+.map-controls-container {
+  pointer-events: auto;
+  margin: 0 0 40px 40px;
+  background: white;
+  border-radius: 4px;
+  padding: 8px 8px;
+}
