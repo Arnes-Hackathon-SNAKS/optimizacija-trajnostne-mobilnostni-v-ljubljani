@@ -83,12 +83,12 @@ async function main() {
     // const attributes = rawShapeFile.parse("dbf", { properties: true });
     // console.log(attributes);
 
-    const lppData = await downloadJsonFile("/mollpp_wgs84.json");
+    const lppData = await downloadJsonFile("mollpp_wgs84.json");
     console.log(lppData);
 
 
     const busIcon = leaflet.icon({
-        iconUrl: "/icons/bus-front_alt.svg",
+        iconUrl: "icons/bus-front_alt.svg",
         iconSize: [16, 16],
         popupAnchor: [0, -16],
         className: "map-bus-icon"
