@@ -67,6 +67,11 @@ async function main() {
         throw new Error("Unable to find control_heatmap element.");
     }
 
+    const bikeLanesCheckbox = <HTMLInputElement | null> document.getElementById("control_bike-lanes");
+    if (bikeLanesCheckbox == null) {
+        throw new Error("Unable to find control_bike-lanes element.");
+    }
+
     // const lppData = await downloadBinaryFile("/mollpp.zip");
     // const [lppShp, lppDbf] = await extractAhpAndDbf(lppData, "MOL_LPP");
     // console.log(lppShp, lppDbf);
@@ -85,6 +90,9 @@ async function main() {
 
     const lppData = await downloadJsonFile("mollpp_wgs84.json");
     console.log(lppData);
+
+    const bikeData = await downloadJsonFile("MOL_KolesarskePoti_wgs84.json");
+    console.log(bikeData);
 
 
     const busIcon = leaflet.icon({
@@ -147,7 +155,7 @@ async function main() {
         const stationName = String(rawStationData["properties"]["Title"]);
 
 
-        console.log(`Station ${stationName}: ${stationLat}, ${stationLng}`);
+        // console.log(`Station ${stationName}: ${stationLat}, ${stationLng}`);
 
         const stationMarker = leaflet.marker(
           [stationLat, stationLng],
@@ -166,8 +174,36 @@ async function main() {
     }
 
 
+    const bikeLanesLayerGroup = leaflet.layerGroup();
+
+    const bikeLaneFeatures: Record<string, any>[] = bikeData["features"];
+    for (const rawBikeLaneEntry of bikeLaneFeatures) {
+        const bikeLanePoints: [number, number][] = [];
+
+        const rawPoints = rawBikeLaneEntry["geometry"]["coordinates"];
+        for (const rawLngLat of rawPoints) {
+            const lng = parseFloat(rawLngLat[0]);
+            const lat = parseFloat(rawLngLat[1]);
+
+            // console.log(`Point: ${lat}, ${lng}`);
+
+            bikeLanePoints.push([lat, lng]);
+        }
+
+        const bikeLanePolyline = leaflet.polyline(
+          bikeLanePoints,
+          {
+              color: "#54ff9e",
+              opacity: 0.6,
+          }
+        );
+        bikeLanePolyline.addTo(bikeLanesLayerGroup);
+    }
+
+
     individualStationsCheckbox.checked = true;
     heatmapCheckbox.checked = false;
+    bikeLanesCheckbox.checked = false;
 
 
     individualStationsCheckbox.addEventListener("click", () => {
@@ -183,6 +219,14 @@ async function main() {
             leafletMap.addLayer(heatMapLayerGroup);
         } else {
             leafletMap.removeLayer(heatMapLayerGroup);
+        }
+    });
+
+    bikeLanesCheckbox.addEventListener("click", () => {
+        if (bikeLanesCheckbox.checked) {
+            leafletMap.addLayer(bikeLanesLayerGroup);
+        } else {
+            leafletMap.removeLayer(bikeLanesLayerGroup);
         }
     });
 
