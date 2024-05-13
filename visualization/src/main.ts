@@ -16,7 +16,7 @@ const MAP_CONTROLS_ELEMENT_IDS = {
     greenZone: "control_green-zone"
 };
 
-const VISUALIZATION_JSON_FILE_PATH: string = "otmlj-data_2024-05-13_20-01-16.json";
+const VISUALIZATION_JSON_FILE_PATH: string = "otmlj-data_2024-05-13_20-38-01.json";
 
 
 function getRequiredElementById<E extends HTMLElement>(
@@ -287,6 +287,10 @@ async function setUpMap(
     </div>
     <div class="green-zone-marker_area">
         Površina: ${greenZoneSquareKilometres} km<sup>2</sup>
+    </div>
+    <div class="green-zone-marker_stops-per-day">
+        ${visualizationData.green_zone.green_zone.total_arrivals_per_day_inside_zone}
+        avtobusnih prihodov na dan
     </div>
 </div>
 `,

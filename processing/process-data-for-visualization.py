@@ -138,13 +138,13 @@ def process_bike_data() -> tuple[list[BikeLaneMultiLine], float]:
     return bike_lanes, total_lane_length_metres
 
 
-def process_green_zone() -> GreenZone:
+def process_green_zone(bus_stops: list[BusStopWithStatistics]) -> GreenZone:
     with GREEN_ZONE_GEOJSON_POLYGON_PATH.open("r", encoding="utf8") as green_zone_file:
         geojson_string = green_zone_file.read()
 
     geojson_data = json.loads(geojson_string)
 
-    return parse_green_zone_GeoJSON_polygon(geojson_data)
+    return parse_green_zone_GeoJSON_polygon(geojson_data, bus_stops)
 
 
 
@@ -194,7 +194,7 @@ def main():
     bike_lanes, total_bike_lane_length_metres = process_bike_data()
 
     time_green_zone_start = time.time()
-    green_zone = process_green_zone()
+    green_zone = process_green_zone(bus_stops_with_arrivals)
 
     time_export_start = time.time()
     export_processed_data_to_file_for_visualization(

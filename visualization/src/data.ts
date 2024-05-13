@@ -27,6 +27,7 @@ export type PPlusR = {
 export type GreenZone = {
     polygon_bounds: LatitudeLongitude[],
     area_in_square_metres: number,
+    total_arrivals_per_day_inside_zone: number,
 };
 
 
