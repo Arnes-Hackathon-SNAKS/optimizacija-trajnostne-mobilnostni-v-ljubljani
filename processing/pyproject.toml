@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "optimizacija-trajnostne-mobilnosti-v-lj"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+area = "^1.1.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
