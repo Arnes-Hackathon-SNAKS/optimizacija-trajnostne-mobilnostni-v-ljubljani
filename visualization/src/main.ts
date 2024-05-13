@@ -1,122 +1,132 @@
 import "./style.scss";
-import { heatLayer } from "./vendor/Leaflet.heat/HeatLayer.js";
+import { HeatLayer, heatLayer } from "./vendor/Leaflet.heat/HeatLayer.js";
 import leaflet, { type MapOptions, TileLayerOptions } from "leaflet";
 import "leaflet/dist/leaflet.css";
-// import JSZip from "jszip";
-// import { open as shapefileOpen } from "shapefile";
+import { VisualizationData } from "./data.ts";
 
 
-// async function downloadBinaryFile(
-//   url: string
-// ): Promise<Blob> {
-//     return fetch(url)
-//       .then(response => response.blob());
-// }
+const LEAFLET_MAP_ELEMENT_ID: string = "leaflet-map";
+const MAP_CONTROLS_ELEMENT_IDS = {
+    busStationPositionsToggle: "control_bus_station-positions",
+    busStationPositionsHeatmapToggle: "control_bus_station-heatmap",
+    busArrivalHeatmapToggle: "control_bus_arrival-heatmap",
+    bikeLanesToggle: "control_bike_lanes",
+    existingParkAndRide: "control_existing-par",
+    proposedParkAndRide: "control_proposed-par",
+    greenZone: "control_green-zone"
+};
 
-async function downloadJsonFile(
-  url: string
-): Promise<Record<string, any>> {
+const VISUALIZATION_JSON_FILE_PATH: string = "otmlj-data_2024-05-13_20-01-16.json";
+
+
+function getRequiredElementById<E extends HTMLElement>(
+  elementId: string
+): E {
+    const element = document.getElementById(elementId);
+    if (element == null) {
+        throw new Error(`Element with id ${elementId} not found`);
+    }
+
+    return <E> element;
+}
+
+
+async function loadJSONFileFromUrl(url: string): Promise<Record<string, any>> {
     return fetch(url)
       .then(response => response.json());
 }
 
-/*
-async function extractAhpAndDbf(
-  blob: Blob,
-  collectionName: string,
-): Promise<[ArrayBuffer, ArrayBuffer]> {
-    const zipFile = await JSZip.loadAsync(blob);
-
-
-    const shpFile = zipFile.file(collectionName + ".shp");
-    if (shpFile == null) {
-        throw new Error("File does not contain " + collectionName + ".shp");
-    }
-
-    const shpFileContents = await shpFile.async("arraybuffer");
-
-
-    const dbfFile = zipFile.file(collectionName + ".dbf");
-    if (dbfFile == null) {
-        throw new Error("File does not contain " + collectionName + ".dbf");
-    }
-
-    const dbfFileContents = await dbfFile.async("arraybuffer");
-
-
-    return [shpFileContents, dbfFileContents];
+async function loadVisualizationData(): Promise<VisualizationData> {
+    return <VisualizationData> await loadJSONFileFromUrl(VISUALIZATION_JSON_FILE_PATH);
 }
-*/
 
-async function main() {
-    console.log("Starting.");
 
-    const mapDivElement = document.getElementById("leaflet-map");
-    if (mapDivElement == null) {
-        throw new Error("Unable to find leaflet-map element.");
+type MapState = {
+    map: leaflet.Map,
+    tiles: leaflet.TileLayer,
+    layerGroups: {
+        busStationPositions: leaflet.LayerGroup,
+        busStationPositionsHeatmap: leaflet.LayerGroup,
+        dailyBusStopsHeatmap: leaflet.LayerGroup,
+        bikeLaneRoutes: leaflet.LayerGroup,
+        existingParkAndRideLocations: leaflet.LayerGroup,
+        proposedParkAndRideLocations: leaflet.LayerGroup,
+        proposedGreenZone: leaflet.LayerGroup,
+    },
+    heatmaps: {
+        busStationPositions: typeof HeatLayer,
+        busDailyStops: typeof HeatLayer,
+    }
+};
+
+
+const busIcon = leaflet.icon({
+    iconUrl: "icons/bus-front_alt.svg",
+    iconSize: [16, 16],
+    popupAnchor: [0, -16],
+    className: "map-bus-icon"
+});
+
+const parkAndRideBlueIcon = leaflet.icon({
+    iconUrl: "icons/p-and-r_blue_v1.svg",
+    iconSize: [32, 16],
+    popupAnchor: [0, -16],
+    className: "map-p-plus-r-icon"
+});
+
+const parkAndRideGreenIcon = leaflet.icon({
+    iconUrl: "icons/p-and-r_green_v1.svg",
+    iconSize: [32, 16],
+    popupAnchor: [0, -16],
+    className: "map-p-plus-r-icon"
+});
+
+
+
+async function setUpMap(
+  mapDOMElement: HTMLElement,
+  visualizationData: VisualizationData,
+): Promise<MapState> {
+    /*
+     * Precalculate some data
+     */
+    let maximumArrivalsPerDay: number = 0;
+    for (const busStop of visualizationData.bus.stops_with_arrivals) {
+        let totalArrivalsPerDay = 0;
+        for (const arrivalPerHour of busStop.arrivals_per_hour) {
+            totalArrivalsPerDay += arrivalPerHour;
+        }
+
+        if (totalArrivalsPerDay > maximumArrivalsPerDay) {
+            maximumArrivalsPerDay = totalArrivalsPerDay;
+        }
     }
 
-
-    const individualStationsCheckbox = <HTMLInputElement | null> document.getElementById("control_individual-stations");
-    if (individualStationsCheckbox == null) {
-        throw new Error("Unable to find control_individual-stations element.");
-    }
-
-    const heatmapCheckbox = <HTMLInputElement | null> document.getElementById("control_heatmap");
-    if (heatmapCheckbox == null) {
-        throw new Error("Unable to find control_heatmap element.");
-    }
-
-    const bikeLanesCheckbox = <HTMLInputElement | null> document.getElementById("control_bike-lanes");
-    if (bikeLanesCheckbox == null) {
-        throw new Error("Unable to find control_bike-lanes element.");
-    }
-
-    // const lppData = await downloadBinaryFile("/mollpp.zip");
-    // const [lppShp, lppDbf] = await extractAhpAndDbf(lppData, "MOL_LPP");
-    // console.log(lppShp, lppDbf);
-
-    // const parsedLppData = await shapefileOpen(lppShp, lppDbf, { encoding: "utf8" });
-    // console.log(parsedLppData);
-
-    // const rawShapeFile = (await Shapefile.load(lppData))["MOL_LPP"];
-    // console.log(rawShapeFile);
-    //
-    // const shapes = rawShapeFile.parse("shp");
-    // console.log(shapes);
-    //
-    // const attributes = rawShapeFile.parse("dbf", { properties: true });
-    // console.log(attributes);
-
-    const lppData = await downloadJsonFile("mollpp_wgs84.json");
-    console.log(lppData);
-
-    const bikeData = await downloadJsonFile("MOL_KolesarskePoti_wgs84.json");
-    console.log(bikeData);
+    console.log("Maximum arrivals per day: " + maximumArrivalsPerDay);
 
 
-    const busIcon = leaflet.icon({
-        iconUrl: "icons/bus-front_alt.svg",
-        iconSize: [16, 16],
-        popupAnchor: [0, -16],
-        className: "map-bus-icon"
-    });
 
-
+    /*
+     * Set up leaflet map
+     */
     const mapOptions: MapOptions = {
-        minZoom: 12.5,
-        zoom: 13,
-        maxZoom: 19,
+        minZoom: 12,
+        zoom: 12.5,
+        maxZoom: 20,
         zoomDelta: 0.5,
         zoomSnap: 0.5,
         center: [46.0496302,14.5082294],
+        // maxBounds: [
+        //     [46.1119247,14.3496721],
+        //     [45.9763077,14.7196471]
+        // ],
         maxBounds: [
-          [46.1119247,14.3496721],
-          [45.9763077,14.7196471]
+            [46.18656505801903,14.203550599655188],
+            [45.8912566052835,14.804051448498598]
         ],
         wheelPxPerZoomLevel: 140,
     };
-    const leafletMap = leaflet.map(mapDivElement, mapOptions);
+    const leafletMap = leaflet.map(mapDOMElement, mapOptions);
 
 
     const tileLayerOptions: TileLayerOptions = {
@@ -126,141 +136,358 @@ async function main() {
     tileLayer.addTo(leafletMap);
 
 
-    const heatMapLayerGroup = leaflet.layerGroup();
-    // heatMapLayerGroup.addTo(leafletMap);
+    // Set up layer groups.
+    const busStationPositionsLayerGroup = leaflet.layerGroup();
+    const busStationPositionHeatmapLayerGroup = leaflet.layerGroup();
+    const busDailyStopsHeatmapLayerGroup = leaflet.layerGroup();
+    const bikeLaneRoutesLayerGroup = leaflet.layerGroup();
+    const existingParkAndRideLocationsLayerGroup = leaflet.layerGroup();
+    const proposedParkAndRideLocationsLayerGroup = leaflet.layerGroup();
+    const proposedGreenZoneLayerGroup = leaflet.layerGroup();
 
-    const heatMapLayer = heatLayer(
+
+
+    /*
+     * Prepare heat maps
+     */
+
+    const heatmapStops = {
+        0.25: "rgb(255,28,62)",
+        0.50: "rgb(250,180,28)",
+        0.65: "#aad27a",
+        0.80: "#21ce29",
+    };
+
+    const busStationPositionHeatmap = heatLayer(
       [],
       {
-          radius: 50,
-          minOpacity: 0.15,
-          blur: 12,
-          max: 1.0
+          radius: 36,
+          minOpacity: 0.2,
+          blur: 22,
+          // max: 1.0,
+          gradient: heatmapStops
       }
     );
-    heatMapLayer.addTo(heatMapLayerGroup);
+    busStationPositionHeatmap.addTo(busStationPositionHeatmapLayerGroup);
 
 
 
-    const stationsLayerGroup = leaflet.layerGroup();
-    stationsLayerGroup.addTo(leafletMap);
+    const dailyBusesHeatmapStops = {
+        0.15: "rgb(255,28,62)",
+        0.30: "rgb(250,180,28)",
+        0.55: "#aad27a",
+        0.70: "#21ce29",
+    };
 
-    const lppStations: Record<string, any>[] = lppData["features"];
-    for (const rawStationData of lppStations) {
-        const rawStationCoordinates: any[] = rawStationData["geometry"]["coordinates"];
+    const busStationDailyStopsHeatmap = heatLayer(
+      [],
+      {
+          radius: 36,
+          minOpacity: 0.2,
+          blur: 22,
+          // max: 1.0,
+          gradient: dailyBusesHeatmapStops
+      }
+    );
 
-        const stationLng = parseFloat(rawStationCoordinates[0]);
-        const stationLat = parseFloat(rawStationCoordinates[1]);
-
-        const stationName = String(rawStationData["properties"]["Title"]);
+    busStationDailyStopsHeatmap.addTo(busDailyStopsHeatmapLayerGroup);
 
 
-        // console.log(`Station ${stationName}: ${stationLat}, ${stationLng}`);
 
-        const stationMarker = leaflet.marker(
-          [stationLat, stationLng],
+
+    /*
+     * Bus station positions location (+ daily stops) heatmap
+     */
+
+    for (const busStop of visualizationData.bus.stops_with_arrivals) {
+        const busStationMarker = leaflet.marker(
+          busStop.location,
           {
               icon: busIcon
           }
         );
 
-        heatMapLayer.addLatLng(
-          [stationLat, stationLng, 1]
+        let totalArrivalsPerDay = 0;
+        for (const arrivalPerHour of busStop.arrivals_per_hour) {
+            totalArrivalsPerDay += arrivalPerHour;
+        }
+
+        // console.log(`Station ${busStop.name} has ${totalArrivalsPerDay} daily arrivals (${totalArrivalsPerDay / maximumArrivalsPerDay}).`);
+
+
+        busStationPositionHeatmap.addLatLng(
+          [busStop.location[0], busStop.location[1], 1]
+        );
+        busStationDailyStopsHeatmap.addLatLng(
+          [busStop.location[0], busStop.location[1], totalArrivalsPerDay / maximumArrivalsPerDay]
         );
 
-        stationMarker.bindPopup(`Postaja <b>${stationName}</b>`);
+        busStationMarker.bindPopup(
+`
+<div class="bus-station-marker">
+    <div class="bus-station-marker_top">
+        ${busStop.code}
+    </div>
+    <div class="bus-station-marker_main">
+        Postaja <b>${busStop.name}</b>
+    </div>
+    <div class="bus-station-marker_daily-count">
+        ${totalArrivalsPerDay} avtobusov na dan
+    </div>
+</div>
+`
+        );
 
-        stationMarker.addTo(stationsLayerGroup);
+        busStationMarker.addTo(busStationPositionsLayerGroup);
     }
 
 
-    const bikeLanesLayerGroup = leaflet.layerGroup();
-
-    const bikeLaneFeatures: Record<string, any>[] = bikeData["features"];
-    for (const rawBikeLaneEntry of bikeLaneFeatures) {
-        const bikeLanePoints: [number, number][] = [];
-
-        const rawPoints = rawBikeLaneEntry["geometry"]["coordinates"];
-        for (const rawLngLat of rawPoints) {
-            const lng = parseFloat(rawLngLat[0]);
-            const lat = parseFloat(rawLngLat[1]);
-
-            // console.log(`Point: ${lat}, ${lng}`);
-
-            bikeLanePoints.push([lat, lng]);
-        }
-
-        const bikeLanePolyline = leaflet.polyline(
-          bikeLanePoints,
-          {
-              color: "#54ff9e",
-              opacity: 0.6,
-          }
-        );
-        bikeLanePolyline.addTo(bikeLanesLayerGroup);
-    }
-
-
-    individualStationsCheckbox.checked = true;
-    heatmapCheckbox.checked = false;
-    bikeLanesCheckbox.checked = false;
-
-
-    individualStationsCheckbox.addEventListener("click", () => {
-        if (individualStationsCheckbox.checked) {
-            leafletMap.addLayer(stationsLayerGroup);
-        } else {
-            leafletMap.removeLayer(stationsLayerGroup);
-        }
-    });
-
-    heatmapCheckbox.addEventListener("click", () => {
-        if (heatmapCheckbox.checked) {
-            leafletMap.addLayer(heatMapLayerGroup);
-        } else {
-            leafletMap.removeLayer(heatMapLayerGroup);
-        }
-    });
-
-    bikeLanesCheckbox.addEventListener("click", () => {
-        if (bikeLanesCheckbox.checked) {
-            leafletMap.addLayer(bikeLanesLayerGroup);
-        } else {
-            leafletMap.removeLayer(bikeLanesLayerGroup);
-        }
-    });
 
     /*
-    while (true) {
-        const nextLocation = await parsedLppData.read();
-        if (nextLocation.done) {
-            console.log("All locations parsed.");
-            break;
+     * Bike lanes
+     */
+
+    for (const bikeLane of visualizationData.bike.bike_lanes) {
+        const bikeLanePolyLine = leaflet.polyline(
+          bikeLane.line_points,
+          {
+              color: "#494652",
+              opacity: 0.8,
+          }
+        );
+
+        bikeLanePolyLine.addTo(bikeLaneRoutesLayerGroup);
+    }
+
+
+
+
+    /*
+     * Proposed green zone
+     */
+
+    const greenZonePolygon = leaflet.polygon(
+      visualizationData.green_zone.green_zone.polygon_bounds,
+      {
+          color: "#af52a7",
+          opacity: 0.7,
+          fillColor: "#bb3ed7",
+          fillOpacity: 0.25,
+      }
+    );
+
+    const greenZoneSquareKilometres = (visualizationData.green_zone.green_zone.area_in_square_metres / 1000000)
+        .toFixed(2);
+
+    greenZonePolygon.bindPopup(
+`
+<div class="green-zone-marker">
+    <div class="green-zone-marker_title">
+        Predlagan zeleni krog
+    </div>
+    <div class="green-zone-marker_area">
+        Površina: ${greenZoneSquareKilometres} km<sup>2</sup>
+    </div>
+</div>
+`,
+      {
+          maxWidth: 600
+      }
+    );
+
+    greenZonePolygon.addTo(proposedGreenZoneLayerGroup);
+
+
+
+
+    /*
+     * Park and ride locations (existing and proposed)
+     */
+
+    for (const existingPPlusR of visualizationData.p_plus_r.existing) {
+        const locationMarker = leaflet.marker(
+          existingPPlusR.location,
+          {
+              icon: parkAndRideBlueIcon
+          }
+        );
+
+        let nameWithoutPPlusRSuffix = existingPPlusR.name.replace("P+R", "");
+        nameWithoutPPlusRSuffix = nameWithoutPPlusRSuffix.trim();
+
+        locationMarker.bindPopup(
+`
+<div class="par-marker par-marker__existing">
+    <div class="par-marker_type">
+        obstoječi P+R
+    </div>
+    <div class="par-marker_name">
+        ${nameWithoutPPlusRSuffix}
+    </div>
+</div>
+`
+        );
+
+        locationMarker.addTo(existingParkAndRideLocationsLayerGroup);
+    }
+
+    for (const proposedPPlusR of visualizationData.p_plus_r.proposed) {
+        const locationMarker = leaflet.marker(
+          proposedPPlusR.location,
+          {
+              icon: parkAndRideGreenIcon
+          }
+        );
+
+        locationMarker.bindPopup(
+          `
+<div class="par-marker par-marker__proposed">
+    <div class="par-marker_type">
+        predlog za novi P+R
+    </div>
+    <div class="par-marker_name">
+        ${proposedPPlusR.name}
+    </div>
+</div>
+`
+        );
+
+        locationMarker.addTo(proposedParkAndRideLocationsLayerGroup);
+
+    }
+
+
+
+    return {
+        map: leafletMap,
+        tiles: tileLayer,
+        layerGroups: {
+            busStationPositions: busStationPositionsLayerGroup,
+            busStationPositionsHeatmap: busStationPositionHeatmapLayerGroup,
+            dailyBusStopsHeatmap: busDailyStopsHeatmapLayerGroup,
+            bikeLaneRoutes: bikeLaneRoutesLayerGroup,
+            existingParkAndRideLocations: existingParkAndRideLocationsLayerGroup,
+            proposedParkAndRideLocations: proposedParkAndRideLocationsLayerGroup,
+            proposedGreenZone: proposedGreenZoneLayerGroup
+        },
+        heatmaps: {
+            busStationPositions: busStationPositionHeatmap,
+            busDailyStops: busStationDailyStopsHeatmap,
+        }
+    }
+}
+
+
+async function setUpInteractivity(
+  mapState: MapState
+) {
+    const busStationPositionsCheckboxElement =
+      getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.busStationPositionsToggle);
+
+    const busStationPositionHeatmapCheckboxElement =
+      getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.busStationPositionsHeatmapToggle);
+
+    const busArrivalHeatmapCheckboxElement =
+      getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.busArrivalHeatmapToggle);
+
+    const bikeLanesCheckboxElement =
+      getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.bikeLanesToggle);
+
+    const existingParkAndRideCheckboxElement =
+      getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.existingParkAndRide);
+
+    const proposedParkAndRideCheckboxElement =
+      getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.proposedParkAndRide);
+
+    const greenZoneCheckboxElement =
+      getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.greenZone);
+
+
+    // Set up default values.
+    busStationPositionsCheckboxElement.checked = false;
+    busStationPositionHeatmapCheckboxElement.checked = false;
+    busArrivalHeatmapCheckboxElement.checked = true;
+    bikeLanesCheckboxElement.checked = false;
+    existingParkAndRideCheckboxElement.checked = true;
+    proposedParkAndRideCheckboxElement.checked = true;
+    greenZoneCheckboxElement.checked = true;
+
+
+    function setUpElementForInteractiveLayerGroupToggle(
+      toggleElement: HTMLInputElement,
+      layerGroupToControl: leaflet.LayerGroup
+    ) {
+        function applyVisibilityToGroupLayer(value: boolean) {
+            if (value) {
+                if (!mapState.map.hasLayer(layerGroupToControl)) {
+                    layerGroupToControl.addTo(mapState.map);
+                }
+            } else {
+                if (mapState.map.hasLayer(layerGroupToControl)) {
+                    layerGroupToControl.removeFrom(mapState.map);
+                }
+            }
         }
 
-        console.log(nextLocation);
+        toggleElement.addEventListener("click", () => {
+            applyVisibilityToGroupLayer(toggleElement.checked);
+        });
 
-        const stationCoordinates = (nextLocation.value.geometry as Record<string, any>)["coordinates"] as number[];
-        const stationName = (nextLocation.value.properties as Record<string, any>)["Title"] as string;
-
-
-        // const stationLat = parseFloat(stationCoordinates[0] as any) / 10000;
-        // const stationLng = parseFloat(stationCoordinates[1] as any) / 10000;
-
-        console.log(`Station ${stationName}: ${stationCoordinates}`);
-
-        // const stationMarker = leaflet.marker(
-        //   [stationLat, stationLng],
-        //   {
-        //
-        //   }
-        // );
-        //
-        // stationMarker.bindPopup(`Postaja: ${stationName}`);
-        //
-        // stationMarker.addTo(leafletMap);
+        applyVisibilityToGroupLayer(toggleElement.checked);
     }
-    */
+
+
+    setUpElementForInteractiveLayerGroupToggle(
+      busStationPositionsCheckboxElement,
+      mapState.layerGroups.busStationPositions
+    );
+
+    setUpElementForInteractiveLayerGroupToggle(
+      busStationPositionHeatmapCheckboxElement,
+      mapState.layerGroups.busStationPositionsHeatmap,
+    );
+
+    setUpElementForInteractiveLayerGroupToggle(
+      busArrivalHeatmapCheckboxElement,
+      mapState.layerGroups.dailyBusStopsHeatmap
+    );
+
+    setUpElementForInteractiveLayerGroupToggle(
+      bikeLanesCheckboxElement,
+      mapState.layerGroups.bikeLaneRoutes
+    );
+
+    setUpElementForInteractiveLayerGroupToggle(
+      existingParkAndRideCheckboxElement,
+      mapState.layerGroups.existingParkAndRideLocations
+    );
+
+    setUpElementForInteractiveLayerGroupToggle(
+      proposedParkAndRideCheckboxElement,
+      mapState.layerGroups.proposedParkAndRideLocations
+    );
+
+    setUpElementForInteractiveLayerGroupToggle(
+      greenZoneCheckboxElement,
+      mapState.layerGroups.proposedGreenZone
+    );
+}
+
+
+async function main() {
+    const mapSurfaceElement = getRequiredElementById(LEAFLET_MAP_ELEMENT_ID);
+
+    const visualizationData = await loadVisualizationData();
+    console.log("Visualization data loaded.");
+
+    const mapState = await setUpMap(
+      mapSurfaceElement,
+      visualizationData
+    );
+    console.log("Map set up.");
+
+    await setUpInteractivity(mapState);
+    console.log("Interactivity set up.");
 }
 
 

@@ -16,6 +16,29 @@ html, body {
   z-index: 50;
 }
 
+.bus-station-marker {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: fit-content;
+
+  &_top {
+    font-size: 0.75rem;
+    font-weight: lighter;
+  }
+
+  &_main {
+    font-size: 1rem;
+  }
+
+  &_daily-count {
+    font-size: 0.85rem;
+    font-weight: lighter;
+    font-style: italic;
+  }
+}
+
 .map-bus-icon svg {
   // box-shadow: 1px 1px 1px 0 #000;
 }
@@ -46,4 +69,44 @@ html, body {
   background: white;
   border-radius: 4px;
   padding: 8px 8px;
+  user-select: none;
+}
+
+
+.par-marker {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: fit-content;
+
+  &_type {
+    font-size: 0.75rem;
+    opacity: 0.95;
+    font-style: italic;
+  }
+
+  &_name {
+    font-size: 0.9rem;
+  }
+}
+
+.green-zone-marker {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: fit-content;
+
+  &_title {
+    min-width: fit-content;
+    white-space: nowrap;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+
+  &_area {
+    font-size: 0.9rem;
+    font-style: italic;
+  }
 }

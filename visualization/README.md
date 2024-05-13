@@ -1,0 +1,1 @@
+To build: `yarn build --base /projects/hackathon/vizualizacija`

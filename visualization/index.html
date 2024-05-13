@@ -10,31 +10,66 @@
     <script type="module" src="/src/main.ts"></script>
 
     <div class="map-container">
+
         <div id="leaflet-map"></div>
+
         <div class="map-control-container">
             <div class="map-control-inner">
                 <div class="map-controls-container">
+
                     <div class="control-entry">
                         <label>
                             Posamezne postaje
-                            <input type="checkbox" id="control_individual-stations">
+                            <input type="checkbox" id="control_bus_station-positions">
                         </label>
                     </div>
+
                     <div class="control-entry">
                         <label>
                             Gostota postaj
-                            <input type="checkbox" id="control_heatmap">
+                            <input type="checkbox" id="control_bus_station-heatmap">
                         </label>
                     </div>
+
+                    <div class="control-entry">
+                        <label>
+                            Gostota dnevnih prihodov na postaje
+                            <input type="checkbox" id="control_bus_arrival-heatmap">
+                        </label>
+                    </div>
+
                     <div class="control-entry">
                         <label>
                             Kolesarske poti
-                            <input type="checkbox" id="control_bike-lanes">
+                            <input type="checkbox" id="control_bike_lanes">
                         </label>
                     </div>
+
+                    <div class="control-entry">
+                        <label>
+                            Obstoječe lokacije P+R
+                            <input type="checkbox" id="control_existing-par">
+                        </label>
+                    </div>
+
+                    <div class="control-entry">
+                        <label>
+                            Predlagane lokacije novih P+R
+                            <input type="checkbox" id="control_proposed-par">
+                        </label>
+                    </div>
+
+                    <div class="control-entry">
+                        <label>
+                            Obseg predlaganega zelenega kroga
+                            <input type="checkbox" id="control_green-zone">
+                        </label>
+                    </div>
+
                 </div>
             </div>
         </div>
+
     </div>
 
 </body>
