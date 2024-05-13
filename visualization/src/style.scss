@@ -74,11 +74,19 @@ html, body {
   user-select: none;
 
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
 
   border: 2px solid #dccab0;
+
+  .vertical-separator {
+    height: 98%;
+    width: 1px;
+    background: black;
+    opacity: 0.25;
+    margin: 0 6px 0 10px;
+  }
 }
 
 .control-entry {
@@ -98,6 +106,43 @@ html, body {
     padding: 2px;
     cursor: pointer;
     accent-color: #fc9c19;
+  }
+}
+
+.legend {
+  position: relative;
+  height: 100%;
+
+  .heatmap-legend {
+    position: relative;
+    height: 100%;
+
+    &_bar {
+      display: inline-block;
+      height: 100%;
+      width: 10px;
+      background: linear-gradient(
+        to top,
+        rgb(255,28,62) 15%,
+        rgb(250,180,28) 30%,
+        #aad27a 55%,
+        #21ce29 70%
+      );
+    }
+
+    &_descriptions {
+      position: relative;
+      height: 100%;
+      display: inline-block;
+      min-width: 20px;
+
+      .dynamic-legend-marker {
+        position: absolute;
+        white-space: nowrap;
+        font-size: 0.75rem;
+        font-weight: lighter;
+      }
+    }
   }
 }
 

@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+
     <title>SNAKS: Avtobusne postaje v Ljubljani</title>
 </head>
 <body>
@@ -17,53 +22,66 @@
             <div class="map-control-inner">
                 <div class="map-controls-container">
 
-                    <div class="control-entry">
-                        <label>
-                            Posamezne postaje
+                    <div class="controls">
+                        <div class="control-entry">
+                            <label for="control_bus_station-positions">
+                                Posamezne postaje
+                            </label>
                             <input type="checkbox" id="control_bus_station-positions">
-                        </label>
-                    </div>
+                        </div>
 
-                    <div class="control-entry">
-                        <label>
-                            Gostota postaj
+                        <div class="control-entry">
+                            <label for="control_bus_station-heatmap">
+                                Gostota postaj
+                            </label>
                             <input type="checkbox" id="control_bus_station-heatmap">
-                        </label>
-                    </div>
+                        </div>
 
-                    <div class="control-entry">
-                        <label>
-                            Gostota dnevnih prihodov na postaje
+                        <div class="control-entry">
+                            <label for="control_bus_arrival-heatmap">
+                                Gostota dnevnih prihodov na postaje
+                            </label>
                             <input type="checkbox" id="control_bus_arrival-heatmap">
-                        </label>
-                    </div>
+                        </div>
 
-                    <div class="control-entry">
-                        <label>
-                            Kolesarske poti
+                        <div class="control-entry">
+                            <label for="control_bike_lanes">
+                                Urejene kolesarske poti
+                            </label>
                             <input type="checkbox" id="control_bike_lanes">
-                        </label>
-                    </div>
+                        </div>
 
-                    <div class="control-entry">
-                        <label>
-                            Obstoječe lokacije P+R
+                        <div class="control-entry">
+                            <label for="control_existing-par">
+                                Obstoječe lokacije P+R
+                            </label>
                             <input type="checkbox" id="control_existing-par">
-                        </label>
-                    </div>
+                        </div>
 
-                    <div class="control-entry">
-                        <label>
-                            Predlagane lokacije novih P+R
+                        <div class="control-entry">
+                            <label for="control_proposed-par">
+                                Lokacije predlaganih novih P+R
+                            </label>
                             <input type="checkbox" id="control_proposed-par">
-                        </label>
+                        </div>
+
+                        <div class="control-entry">
+                            <label for="control_green-zone">
+                                Predlagan zeleni krog
+                            </label>
+                            <input type="checkbox" id="control_green-zone">
+                        </div>
                     </div>
 
-                    <div class="control-entry">
-                        <label>
-                            Obseg predlaganega zelenega kroga
-                            <input type="checkbox" id="control_green-zone">
-                        </label>
+                    <span class="vertical-separator"></span>
+
+                    <div class="legend">
+                        <div class="heatmap-legend">
+                            <span class="heatmap-legend_bar"></span>
+                            <span class="heatmap-legend_descriptions" id="legend_heatmap_descriptions">
+                                <!-- dynamically populated -->
+                            </span>
+                        </div>
                     </div>
 
                 </div>

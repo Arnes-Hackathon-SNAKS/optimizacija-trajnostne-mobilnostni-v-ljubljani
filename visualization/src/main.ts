@@ -121,8 +121,8 @@ async function setUpMap(
         //     [45.9763077,14.7196471]
         // ],
         maxBounds: [
-            [46.18656505801903,14.203550599655188],
-            [45.8912566052835,14.804051448498598]
+            [46.30113843514553,14.091851985020412],
+            [45.897388427215446,14.846448435071068]
         ],
         wheelPxPerZoomLevel: 140,
     };
@@ -178,6 +178,36 @@ async function setUpMap(
         0.55: "#aad27a",
         0.70: "#21ce29",
     };
+
+    const heatmapLegendPoints = [0, 0.354, 0.607, 0.759, 0.962];
+
+    // Generate a dynamic heatmap legend.
+    const heatmapLegendElement = getRequiredElementById("legend_heatmap_descriptions");
+
+    const legendElementHeight = heatmapLegendElement.clientHeight;
+
+    for (const fractionalLegendPoint of heatmapLegendPoints) {
+        const mappedActualValue = (maximumArrivalsPerDay * fractionalLegendPoint).toFixed(0);
+        const offsetFromBottomInPixels = legendElementHeight * fractionalLegendPoint;
+
+        const dynamicLegendEntry = document.createElement("span");
+
+        dynamicLegendEntry.classList.add("dynamic-legend-marker");
+        dynamicLegendEntry.innerText = mappedActualValue;
+
+        if (fractionalLegendPoint == 0.0) {
+            dynamicLegendEntry.style.bottom = `${offsetFromBottomInPixels}px`;
+        } else {
+            const actualOffset = offsetFromBottomInPixels - 16;
+            dynamicLegendEntry.style.bottom = `${actualOffset}px`;
+        }
+
+
+
+
+        heatmapLegendElement.appendChild(dynamicLegendEntry);
+    }
+
 
     const busStationDailyStopsHeatmap = heatLayer(
       [],
@@ -343,6 +373,9 @@ async function setUpMap(
           }
         );
 
+        let nameWithoutPPlusRSuffix = proposedPPlusR.name.replace("P+R", "");
+        nameWithoutPPlusRSuffix = nameWithoutPPlusRSuffix.trim();
+
         locationMarker.bindPopup(
           `
 <div class="par-marker par-marker__proposed">
@@ -350,7 +383,7 @@ async function setUpMap(
         predlog za novi P+R
     </div>
     <div class="par-marker_name">
-        ${proposedPPlusR.name}
+        ${nameWithoutPPlusRSuffix}
     </div>
 </div>
 `
@@ -419,7 +452,8 @@ async function setUpInteractivity(
 
     function setUpElementForInteractiveLayerGroupToggle(
       toggleElement: HTMLInputElement,
-      layerGroupToControl: leaflet.LayerGroup
+      layerGroupToControl: leaflet.LayerGroup,
+      additionalCallback?: (enabled: boolean) => void,
     ) {
         function applyVisibilityToGroupLayer(value: boolean) {
             if (value) {
@@ -433,11 +467,17 @@ async function setUpInteractivity(
             }
         }
 
-        toggleElement.addEventListener("click", () => {
+        toggleElement.addEventListener("change", () => {
             applyVisibilityToGroupLayer(toggleElement.checked);
+            if (typeof additionalCallback !== "undefined") {
+                additionalCallback(toggleElement.checked);
+            }
         });
 
         applyVisibilityToGroupLayer(toggleElement.checked);
+        if (typeof additionalCallback !== "undefined") {
+            additionalCallback(toggleElement.checked);
+        }
     }
 
 
@@ -449,11 +489,24 @@ async function setUpInteractivity(
     setUpElementForInteractiveLayerGroupToggle(
       busStationPositionHeatmapCheckboxElement,
       mapState.layerGroups.busStationPositionsHeatmap,
+      (enabled) => {
+          if (enabled) {
+              busArrivalHeatmapCheckboxElement.checked = false;
+              busArrivalHeatmapCheckboxElement.dispatchEvent(new Event("change"));
+          }
+      }
     );
 
     setUpElementForInteractiveLayerGroupToggle(
       busArrivalHeatmapCheckboxElement,
-      mapState.layerGroups.dailyBusStopsHeatmap
+      mapState.layerGroups.dailyBusStopsHeatmap,
+      (enabled) => {
+          if (enabled) {
+              busStationPositionHeatmapCheckboxElement.checked = false;
+
+              busStationPositionHeatmapCheckboxElement.dispatchEvent(new Event("change"));
+          }
+      }
     );
 
     setUpElementForInteractiveLayerGroupToggle(
