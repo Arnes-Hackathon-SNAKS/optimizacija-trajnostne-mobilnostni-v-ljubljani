@@ -1,1 +1,1 @@
-To build: `yarn build --base /projects/hackathon/vizualizacija`
+To build: `yarn build --base /optimizacija-trajnostne-mobilnostni-v-ljubljani/`
