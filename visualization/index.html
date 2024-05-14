@@ -11,7 +11,6 @@
     <title>SNAKS: Avtobusne postaje v Ljubljani</title>
 </head>
 <body>
-<div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
 
     <div class="map-container">
@@ -23,18 +22,12 @@
                 <div class="map-controls-container">
 
                     <div class="controls">
-                        <div class="control-entry">
-                            <label for="control_bus_station-positions">
-                                Posamezne postaje
-                            </label>
-                            <input type="checkbox" id="control_bus_station-positions">
-                        </div>
 
                         <div class="control-entry">
-                            <label for="control_bus_station-heatmap">
-                                Gostota postaj
+                            <label for="control_green-zone">
+                                Predlagan zeleni krog
                             </label>
-                            <input type="checkbox" id="control_bus_station-heatmap">
+                            <input type="checkbox" id="control_green-zone">
                         </div>
 
                         <div class="control-entry">
@@ -42,13 +35,6 @@
                                 Gostota dnevnih prihodov na postaje
                             </label>
                             <input type="checkbox" id="control_bus_arrival-heatmap">
-                        </div>
-
-                        <div class="control-entry">
-                            <label for="control_bike_lanes">
-                                Urejene kolesarske poti
-                            </label>
-                            <input type="checkbox" id="control_bike_lanes">
                         </div>
 
                         <div class="control-entry">
@@ -66,11 +52,27 @@
                         </div>
 
                         <div class="control-entry">
-                            <label for="control_green-zone">
-                                Predlagan zeleni krog
+                            <label for="control_bike_lanes">
+                                Urejene kolesarske poti
                             </label>
-                            <input type="checkbox" id="control_green-zone">
+                            <input type="checkbox" id="control_bike_lanes">
                         </div>
+
+                        <hr class="horizontal-separator">
+
+                        <div class="control-entry">
+                            <label for="control_bus_station-positions">
+                                Posamezne avtobusne postaje
+                            </label>
+                            <input type="checkbox" id="control_bus_station-positions">
+                        </div>
+
+                        <!--<div class="control-entry">
+                            <label for="control_bus_station-heatmap">
+                                Gostota postaj
+                            </label>
+                            <input type="checkbox" id="control_bus_station-heatmap">
+                        </div>-->
                     </div>
 
                     <span class="vertical-separator"></span>

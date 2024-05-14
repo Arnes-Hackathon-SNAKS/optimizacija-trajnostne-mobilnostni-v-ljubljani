@@ -87,6 +87,21 @@ html, body {
     opacity: 0.25;
     margin: 0 6px 0 10px;
   }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: center;
+  }
+
+  .horizontal-separator {
+    width: 98%;
+    height: 1px;
+    background: black;
+    opacity: 0.4;
+    margin: 2px 0;
+  }
 }
 
 .control-entry {
@@ -106,6 +121,20 @@ html, body {
     padding: 2px;
     cursor: pointer;
     accent-color: #fc9c19;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .control-entry {
+    label, input {
+      font-size: 0.75rem;
+    }
+  }
+  .map-controls-container {
+    margin: 0 0 18px 0;
+    border-left: none;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
   }
 }
 

@@ -421,8 +421,8 @@ async function setUpInteractivity(
     const busStationPositionsCheckboxElement =
       getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.busStationPositionsToggle);
 
-    const busStationPositionHeatmapCheckboxElement =
-      getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.busStationPositionsHeatmapToggle);
+    // const busStationPositionHeatmapCheckboxElement =
+    //  getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.busStationPositionsHeatmapToggle);
 
     const busArrivalHeatmapCheckboxElement =
       getRequiredElementById<HTMLInputElement>(MAP_CONTROLS_ELEMENT_IDS.busArrivalHeatmapToggle);
@@ -442,12 +442,12 @@ async function setUpInteractivity(
 
     // Set up default values.
     busStationPositionsCheckboxElement.checked = false;
-    busStationPositionHeatmapCheckboxElement.checked = false;
-    busArrivalHeatmapCheckboxElement.checked = true;
+    // busStationPositionHeatmapCheckboxElement.checked = false;
+    busArrivalHeatmapCheckboxElement.checked = false;
     bikeLanesCheckboxElement.checked = false;
-    existingParkAndRideCheckboxElement.checked = true;
-    proposedParkAndRideCheckboxElement.checked = true;
-    greenZoneCheckboxElement.checked = true;
+    existingParkAndRideCheckboxElement.checked = false;
+    proposedParkAndRideCheckboxElement.checked = false;
+    greenZoneCheckboxElement.checked = false;
 
 
     function setUpElementForInteractiveLayerGroupToggle(
@@ -486,27 +486,27 @@ async function setUpInteractivity(
       mapState.layerGroups.busStationPositions
     );
 
-    setUpElementForInteractiveLayerGroupToggle(
-      busStationPositionHeatmapCheckboxElement,
-      mapState.layerGroups.busStationPositionsHeatmap,
-      (enabled) => {
-          if (enabled) {
-              busArrivalHeatmapCheckboxElement.checked = false;
-              busArrivalHeatmapCheckboxElement.dispatchEvent(new Event("change"));
-          }
-      }
-    );
+    // setUpElementForInteractiveLayerGroupToggle(
+    //   busStationPositionHeatmapCheckboxElement,
+    //   mapState.layerGroups.busStationPositionsHeatmap,
+    //   (enabled) => {
+    //       if (enabled) {
+    //           busArrivalHeatmapCheckboxElement.checked = false;
+    //           busArrivalHeatmapCheckboxElement.dispatchEvent(new Event("change"));
+    //       }
+    //   }
+    // );
 
     setUpElementForInteractiveLayerGroupToggle(
       busArrivalHeatmapCheckboxElement,
       mapState.layerGroups.dailyBusStopsHeatmap,
-      (enabled) => {
-          if (enabled) {
-              busStationPositionHeatmapCheckboxElement.checked = false;
-
-              busStationPositionHeatmapCheckboxElement.dispatchEvent(new Event("change"));
-          }
-      }
+      // (enabled) => {
+      //     if (enabled) {
+      //         busStationPositionHeatmapCheckboxElement.checked = false;
+      //
+      //         busStationPositionHeatmapCheckboxElement.dispatchEvent(new Event("change"));
+      //     }
+      // }
     );
 
     setUpElementForInteractiveLayerGroupToggle(
