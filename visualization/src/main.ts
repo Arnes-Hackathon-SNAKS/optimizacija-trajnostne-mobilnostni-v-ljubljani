@@ -110,7 +110,7 @@ async function setUpMap(
      * Set up leaflet map
      */
     const mapOptions: MapOptions = {
-        minZoom: 12,
+        minZoom: 10,
         zoom: 12.5,
         maxZoom: 20,
         zoomDelta: 0.5,
